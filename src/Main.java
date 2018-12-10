@@ -4,9 +4,9 @@ public class Main {
 
         char board[][] =
                 {
-                        {'_', '_', '_'},
-                        {'_', '_', '_'},
-                        {'_', '_', '_'}
+                        {'o', 'o', 'x'},
+                        {'x', 'x', 'o'},
+                        {'x', 'o', 'x'}
                 };
         TicTacToe ticTacToe = new TicTacToe();
 

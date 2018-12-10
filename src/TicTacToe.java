@@ -1,3 +1,6 @@
+import java.util.Comparator;
+import java.util.PriorityQueue;
+
 public class TicTacToe {
 
     public Cell bestMove = null;
@@ -38,33 +41,32 @@ public class TicTacToe {
         int evaluateBoardResult = evaluateBoard(board);
         if (evaluateBoardResult != 0) return evaluateBoardResult;
         if (checkComplete(board)) return 0;
-        if (depth == 0) return 0;
+        PriorityQueue<Cell> pq = findValidMoves(board, isMaxTurn);
+        if (depth == 0) {
+            bestMove = pq.peek();
+            return pq.peek().heuristic;
+        }
         char[][] boardClone = board.clone();
         int maxResult = Integer.MIN_VALUE, minResult = Integer.MAX_VALUE;
 
-        for (int i = 0; i < 3; i++) {
-            for (int j = 0; j < 3; j++) {
-                if (isMaxTurn) {
-                    if (boardClone[i][j] == '_') {
-                        boardClone[i][j] = 'x';
-                        int result = minimax(board, depth - 1, !isMaxTurn);
-                        if (result > maxResult) {
-                            maxResult = result;
-                            bestMove = new Cell(i, j);
-                        }
-                        boardClone[i][j] = '_';
-                    }
-                } else {
-                    if (boardClone[i][j] == '_') {
-                        boardClone[i][j] = 'o';
-                        int result = minimax(board, depth - 1, !isMaxTurn);
-                        if (result < minResult) {
-                            minResult = result;
-                            bestMove = new Cell(i, j);
-                        }
-                        boardClone[i][j] = '_';
-                    }
+        while (!pq.isEmpty()) {
+            Cell move = pq.poll();
+            if (isMaxTurn) {
+                boardClone[move.x][move.y] = 'x';
+                int result = minimax(boardClone, depth - 1, !isMaxTurn);
+                if (result > maxResult) {
+                    maxResult = result;
+                    bestMove = move;
                 }
+                boardClone[move.x][move.y] = '_';
+            } else {
+                boardClone[move.x][move.y] = 'o';
+                int result = minimax(boardClone, depth - 1, !isMaxTurn);
+                if (result < minResult) {
+                    minResult = result;
+                    bestMove = move;
+                }
+                boardClone[move.x][move.y] = '_';
             }
         }
 
@@ -101,6 +103,66 @@ public class TicTacToe {
     }
 
     public int heuristic(char[][] board, int x, int y) {
-        return 0;
+        int xRows = 0, oRows = 0, xCols = 0, oCols = 0, xDiagonals = 0, oDiagonals = 0;
+        if (x == y) {
+            int mainDiagonalXCount = 0, mainDiagonalOCount = 0;
+            for (int i = 0; i < 3; i++) {
+                if (board[i][i] == 'x' || board[i][i] == '_') mainDiagonalXCount++;
+                if (board[i][i] == 'o' || board[i][i] == '_') mainDiagonalOCount++;
+            }
+            if (mainDiagonalXCount == 3) xDiagonals++;
+            if (mainDiagonalOCount == 3) oDiagonals++;
+        }
+        if ((x + y) == 2) {
+            int secondaryDiagonalXCount = 0, secondaryDiagonalOCount = 0;
+            for (int i = 0; i < 3; i++) {
+                if (board[i][2 - i] == 'x' || board[i][2 - i] == '_') secondaryDiagonalXCount++;
+                if (board[i][2 - i] == 'o' || board[i][2 - i] == '_') secondaryDiagonalOCount++;
+            }
+            if (secondaryDiagonalXCount == 3) xDiagonals++;
+            if (secondaryDiagonalOCount == 3) oDiagonals++;
+        }
+
+        for (int i = 0; i < 3; i++) {
+            if (board[x][i] == 'x' || board[x][i] == '_') xRows++;
+            if (board[x][i] == 'o' || board[x][i] == '_') oRows++;
+        }
+
+        for (int i = 0; i < 3; i++) {
+            if (board[i][y] == 'x' || board[i][y] == '_') xCols++;
+            if (board[i][y] == 'o' || board[i][y] == '_') oCols++;
+        }
+
+        return (xRows + xCols + xDiagonals) - (oRows + oCols + oDiagonals);
     }
+
+    public PriorityQueue<Cell> findValidMoves(char[][] board, boolean isMaxTurn) {
+        PriorityQueue<Cell> result;
+        Comparator<Cell> c;
+        if (isMaxTurn) {
+            c = new Comparator<Cell>() {
+                @Override
+                public int compare(Cell o1, Cell o2) {
+                    return o1.heuristic - o2.heuristic;
+                }
+            };
+            result = new PriorityQueue<>(c);
+        } else {
+            c = new Comparator<Cell>() {
+                @Override
+                public int compare(Cell o1, Cell o2) {
+                    return o2.heuristic - o1.heuristic;
+                }
+            };
+            result = new PriorityQueue<>(c);
+        }
+        for (int i = 0; i < board.length; i++) {
+            for (int j = 0; j < board[i].length; j++) {
+                if (board[i][j] == '_') result.add(new Cell(i, j, heuristic(board, i, j)));
+            }
+        }
+
+        return result;
+    }
+
 }
