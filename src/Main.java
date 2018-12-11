@@ -4,15 +4,15 @@ public class Main {
 
         char board[][] =
                 {
-                        {'o', 'o', 'x'},
-                        {'x', 'x', 'o'},
-                        {'x', 'o', 'x'}
+                        {'_', '_', '_'},
+                        {'_', '_', '_'},
+                        {'_', '_', '_'}
                 };
         TicTacToe ticTacToe = new TicTacToe();
 
         //   Cell bestCell = ticTacToe.bestMove(board);
 
-        System.out.println("Current Minimax =" + ticTacToe.minimax(board, 4, true));
+        System.out.println("Current Minimax =" + ticTacToe.minimax(board, 4, false));
         System.out.println(ticTacToe.bestMove);
     }
 

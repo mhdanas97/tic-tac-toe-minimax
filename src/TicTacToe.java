@@ -139,21 +139,11 @@ public class TicTacToe {
     public PriorityQueue<Cell> findValidMoves(char[][] board, boolean isMaxTurn) {
         PriorityQueue<Cell> result;
         Comparator<Cell> c;
-        if (isMaxTurn) {
-            c = new Comparator<Cell>() {
-                @Override
-                public int compare(Cell o1, Cell o2) {
-                    return o1.heuristic - o2.heuristic;
-                }
-            };
+        if (!isMaxTurn) {
+            c = Comparator.comparingInt(o -> o.heuristic);
             result = new PriorityQueue<>(c);
         } else {
-            c = new Comparator<Cell>() {
-                @Override
-                public int compare(Cell o1, Cell o2) {
-                    return o2.heuristic - o1.heuristic;
-                }
-            };
+            c = (o1, o2) -> o2.heuristic - o1.heuristic;
             result = new PriorityQueue<>(c);
         }
         for (int i = 0; i < board.length; i++) {
