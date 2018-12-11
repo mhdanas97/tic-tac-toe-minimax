@@ -34,17 +34,16 @@ public class TicTacToe {
         return 0;
     }
 
-    public int minimax(char board[][], int depth, boolean isMaxTurn) {
+    public int minimax(char board[][], int depth, int alpha, int beta, boolean isMaxTurn) {
 
         //write code here
 
         int evaluateBoardResult = evaluateBoard(board);
         if (evaluateBoardResult != 0) return evaluateBoardResult;
-        if (checkComplete(board)) return 0;
         PriorityQueue<Cell> pq = findValidMoves(board, isMaxTurn);
-        if (depth == 0) {
+        if (checkComplete(board) || depth == 0) {
             bestMove = pq.peek();
-            return pq.peek().heuristic;
+            return pq.peek() == null ? 0 : pq.peek().heuristic;
         }
         char[][] boardClone = board.clone();
         int maxResult = Integer.MIN_VALUE, minResult = Integer.MAX_VALUE;
@@ -53,20 +52,24 @@ public class TicTacToe {
             Cell move = pq.poll();
             if (isMaxTurn) {
                 boardClone[move.x][move.y] = 'x';
-                int result = minimax(boardClone, depth - 1, !isMaxTurn);
+                int result = minimax(boardClone, depth - 1, alpha, beta, !isMaxTurn);
+                alpha = Integer.max(alpha, result);
                 if (result > maxResult) {
                     maxResult = result;
                     bestMove = move;
                 }
                 boardClone[move.x][move.y] = '_';
+                if (alpha >= beta) break;
             } else {
                 boardClone[move.x][move.y] = 'o';
-                int result = minimax(boardClone, depth - 1, !isMaxTurn);
+                int result = minimax(boardClone, depth - 1, alpha, beta, !isMaxTurn);
+                beta = Integer.min(beta, result);
                 if (result < minResult) {
                     minResult = result;
                     bestMove = move;
                 }
                 boardClone[move.x][move.y] = '_';
+                if (alpha >= beta) break;
             }
         }
 
